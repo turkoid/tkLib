@@ -146,9 +146,7 @@ tkLib.createFallback = function(private, fallback, recursive)
         end
     end
     setmetatable(private, {
-        __index = function(t, i)
-            return fallback and fallback[i]
-        end,
+        __index = fallback,
         __newindex = function(t, k, v)
             if (type(v) == 'table') then                
                 tkLib.createFallback(v, fallback and fallback[k], recursive)
