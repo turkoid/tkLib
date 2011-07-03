@@ -1,0 +1,9 @@
+## Interface: 40200
+## Title: |cff00ccfftk|rLib
+## Author: turkoid
+## Version: 40200.1b
+## Notes: turkoid's Library
+## Dependencies: tkMedia
+
+core.lua
+
