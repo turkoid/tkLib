@@ -7,6 +7,7 @@ local format, tostring = string.format, tostring
 tkLib = {}
 
 do
+    --credit: tukUI
     local resolution = {}
     resolution.scale = 0.64
     resolution.width, resolution.height = string.match(GetCVar('gxResolution'), '(%d+)x(%d+)')
