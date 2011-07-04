@@ -27,8 +27,7 @@ tkLib.player = {
 
 tkLib.dummy = function() return end
 
-tkLib.niltable = {}
-setmetatable(tkLib.niltable, {
+tkLib.niltable = setmetatable({}, {
     __index = function(t, i)
         return tkLib.niltable
     end,
@@ -191,7 +190,7 @@ do
     end
     
     local func8Bit = function(num)
-        return num and floor(num * 255 + 0.5)
+        return floor(num * 255 + 0.5)
     end
     
     local convert = function(func, r, g, b)
@@ -217,4 +216,3 @@ do
 end
 
 _G[global] = tkLib
-
