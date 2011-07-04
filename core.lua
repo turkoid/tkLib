@@ -6,6 +6,24 @@ local format, tostring = string.format, tostring
 
 tkLib = {}
 
+do
+    local resolution = {}
+    resolution.scale = 0.64
+    resolution.width, resolution.height = string.match(GetCVar('gxResolution'), '(%d+)x(%d+)')
+    resolution.mult = 768 / resolution.height / resolution.scale
+    SetCVar('UIScale', resolution.scale)   
+    
+    tkLib.resolution = resolution
+end
+
+tkLib.player = {
+    name = UnitName('player'),
+    level = UnitLevel('player'),
+    race = UnitRace('player'),
+    class = select(2, UnitClass('player')),
+    faction = UnitFactionGroup('player'),
+}
+
 tkLib.dummy = function() return end
 
 tkLib.niltable = {}
@@ -172,7 +190,7 @@ do
     end
     
     local func8Bit = function(num)
-        return floor(num * 255 + 0.5)
+        return num and floor(num * 255 + 0.5)
     end
     
     local convert = function(func, r, g, b)
