@@ -4,26 +4,9 @@ local global = 'tkLib'
 local media = tkMedia
 local format, tostring = string.format, tostring
 
+local supressWarnings = false
+
 tkLib = {}
-
-do
-    --credit: tukUI
-    local resolution = {}
-    resolution.scale = 0.64
-    resolution.width, resolution.height = string.match(GetCVar('gxResolution'), '(%d+)x(%d+)')
-    resolution.mult = 768 / resolution.height / resolution.scale
-    SetCVar('UIScale', resolution.scale)   
-    
-    tkLib.resolution = resolution
-end
-
-tkLib.player = {
-    name = UnitName('player'),
-    level = UnitLevel('player'),
-    race = UnitRace('player'),
-    class = select(2, UnitClass('player')),
-    faction = UnitFactionGroup('player'),
-}
 
 tkLib.dummy = function() return end
 
@@ -33,23 +16,6 @@ tkLib.niltable = setmetatable({}, {
     end,
     __newindex = tkLib.dummy,
 })
-
-tkLib.hex = function(r, g, b, isNormalized)
-    if (type(r) == 'table') then
-        isNormalized = g
-        if (r.r) then
-            r, g, b = r.r, r.g, r.b
-        else
-            r, g, b = unpack(r)
-        end
-    end
-    
-    if (isNormalized) then
-        r, g, b = r * 255, g * 255, b * 255
-    end
-    
-    return string.format('|cff%02x%02x%02x', r, g, b)
-end
 
 tkLib.print = function(msg)
     DEFAULT_CHAT_FRAME:AddMessage(tostring(msg))
@@ -73,7 +39,7 @@ tkLib.debug = function(name, ...)
         end
     end
     
-    if line == '' then line = format(' %s%s|r', colors.red, 'NOTHING TO PRINT') end
+    if line == '' then line = format(' %s%s|r', media.colors.red, 'NOTHING TO PRINT') end
     tkLib.print(format('%sDEBUG|r [%s%s|r]: %s', media.default.hexcolor, media.default.hexcolor, name, line))
 end
 
@@ -176,14 +142,6 @@ tkLib.createFallback = function(private, fallback, recursive)
     return private
 end
 
-tkLib.getRGB = function(c)
-    if (c.r) then
-        return c.r, c.g, c.b
-    else
-        return c[1], c[2], c[3]
-    end
-end
-
 do
     local funcPercent = function(num)
         return num / 255        
@@ -193,19 +151,23 @@ do
         return floor(num * 255 + 0.5)
     end
     
-    local convert = function(func, r, g, b)
-        if (type(r) == 'table') then 
-            if (r.r) then
-                r.r, r.g, r.b = func(r.r), func(r.g), func(r.b)
-            else
-                r[1], r[2], r[3] = func(r[1]), func(r[2]), func(r[3])
+    tkLib.getRGB = function(r, g, b)
+        if (type(r) == 'table') then           
+            if (r.r) then 
+                return r.r, r.g, r.b
+            else 
+                return unpack(r) 
             end
-            return r
-        else
-            return {func(r), func(g), func(b)}
+        else 
+            return r, g, b 
         end
     end
-            
+    
+    local convert = function(func, r, g, b)
+        r, g, b = tkLib.getRGB(r, g, b)
+        return {func(r), func(g), func(b)}
+    end
+        
     tkLib.getPercentRGB = function(r, g, b)
         return convert(funcPercent, r, g, b)
     end
@@ -213,6 +175,51 @@ do
     tkLib.get8BitRGB = function(r, g, b)
         return convert(func8Bit, r, g, b)
     end
+    
+    tkLib.getHexRGB = function(r, g, b, isPercentRGB)  
+        if (type(r) == 'table') then
+            isPercentRGB = g
+            r, g, b = tkLib.getRGB(r, g, b)
+        end
+        if (isPercentRGB) then r, g, b = r * 255, g * 255, b * 255 end
+        return string.format('|cff%02x%02x%02x', r, g, b)
+    end
+    
+    tkLib.hex = tkLib.getHexRGB --backwards compatibility
+    
+    tkLib.applyRGBToString = function(str, r, g, b, isPercentRGB)
+        return tkLib.getHexRGB(r, g, b, isPercentRGB)..str..'|r'
+    end
+    
+    tkLib.applyHexToString = function(str, color)
+        return color..str..'|r'
+    end
 end
 
+
+do
+    --credit: tukUI
+    local resolution = {}
+    resolution.scale = 0.64
+    resolution.width, resolution.height = string.match(GetCVar('gxResolution'), '(%d+)x(%d+)')
+    resolution.mult = 768 / resolution.height / resolution.scale
+    if (GetCVar('UIScale')) then
+        SetCVar('UIScale', resolution.scale)  
+    elseif (not suppressWarnings) then
+        tkLib.message('WARNING', 'UIScale could not be set. A ReloadUI() will fix this.')
+    end
+    tkLib.debug('res', resolution)
+    tkLib.resolution = resolution
+end
+
+tkLib.player = {
+    name = UnitName('player'),
+    realm = GetRealmName(),
+    level = UnitLevel('player'),
+    race = UnitRace('player'),
+    class = select(2, UnitClass('player')),
+    faction = UnitFactionGroup('player'),
+}
+
+tkLib.debug('player', tkLib.player)
 _G[global] = tkLib
