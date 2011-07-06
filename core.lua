@@ -187,11 +187,11 @@ do
     
     tkLib.hex = tkLib.getHexRGB --backwards compatibility
     
-    tkLib.applyRGBToString = function(str, r, g, b, isPercentRGB)
+    tkLib.applyRGB = function(str, r, g, b, isPercentRGB)
         return tkLib.getHexRGB(r, g, b, isPercentRGB)..str..'|r'
     end
     
-    tkLib.applyHexToString = function(str, color)
+    tkLib.applyHex = function(str, color)
         return color..str..'|r'
     end
 end
